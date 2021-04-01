@@ -1,6 +1,9 @@
 import itertools
 from collections import Counter
 from dataclasses import dataclass, field
+from typing import Iterable
+
+from inverted_index.textparser import clean_text
 
 
 class InvertedIndex:
@@ -20,7 +23,7 @@ class InvertedIndex:
     def __delitem__(self, key):
         del self._index[key]
 
-    def __iter__(self) -> iter(str):
+    def __iter__(self) -> Iterable[str]:
         return iter(self._index)
 
     def __contains__(self, item) -> bool:
@@ -30,24 +33,26 @@ class InvertedIndex:
         return repr(self._index)
 
     def __str__(self) -> str:
-        return ''.join([f'{key}: {value}\n' for key, value in self._index.items()])
+        return ''.join([f'{key}: {value.postings}\n' for key, value in self._index.items()])
 
     def __bool__(self) -> bool:
         return bool(self._index)
 
-    def parse(self, documents: list[str]):
-        for idx, doc in enumerate(documents):
-            for term in doc:
+    def parse(self, documents: dict[int, str]):
+        for doc_id, text in documents.items():
+            tokens = clean_text(text)
+            self._collection[doc_id] = tokens
+            for pos, term in enumerate(tokens):
                 if term not in self._index:
                     self._index[term] = InvertedList()
-                self._index[term].add_posting(idx)
+                self._index[term].add_posting(doc_id, pos)
 
     def clear(self):
         self._index.clear()
 
     @property
     def index(self) -> dict[str, 'InvertedList']:
-        return self._index
+        return {key: value for key, value in sorted(self._index.items())}
 
     @property
     def collection(self) -> dict[int, list[str]]:
@@ -78,7 +83,7 @@ class InvertedIndex:
         return self.word_count / self.collection_length
 
     @property
-    def counter(self) -> Counter[str]:
+    def word_counter(self) -> Counter[str]:
         return Counter(self.words)
 
 
@@ -86,23 +91,18 @@ class InvertedList:
     def __init__(self):
         self._postings: dict[int, 'Posting'] = dict()
 
-    def add_posting(self, pid: int):
-        if self.contains_posting(pid):
-            return self.update_posting(pid)
-        posting = Posting()
-        self._postings[pid] = posting
-
-    def update_posting(self, pid: int):
-        if not self.contains_posting(pid):
-            return self.add_posting(pid)
-        posting = self._postings[pid]
+    def add_posting(self, doc_id: int, pos: int):
+        if not self.contains_posting(doc_id):
+            self._postings[doc_id] = Posting()
+        posting = self._postings[doc_id]
         posting.freq += 1
+        posting.positions.append(pos)
 
-    def get_posting(self, pid: int) -> 'Posting':
-        return self._postings[pid]
+    def get_posting(self, doc_id: int) -> 'Posting':
+        return self._postings[doc_id]
 
-    def contains_posting(self, pid: int) -> bool:
-        return pid in self._postings
+    def contains_posting(self, doc_id: int) -> bool:
+        return doc_id in self._postings
 
     @property
     def postings(self) -> dict[int, 'Posting']:
@@ -115,6 +115,6 @@ class InvertedList:
 
 @dataclass
 class Posting:
-    freq: int = 1
+    freq: int = 0
     tfidf: float = 0.0
     positions: list = field(default_factory=list)
