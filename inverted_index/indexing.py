@@ -1,36 +1,37 @@
 class InvertedIndex:
     def __init__(self):
-        raise NotImplementedError
+        self._index: dict[str, any] = {}
 
-    def __len__(self):
-        raise NotImplementedError
+    def __len__(self) -> int:
+        return len(self._index)
 
-    def __getitem__(self, item):
-        raise NotImplementedError
+    def __getitem__(self, item: str) -> dict[str, any]:
+        return self._index[item]
 
     def __setitem__(self, key, value):
-        raise NotImplementedError
+        self._index[key] = value
 
     def __delitem__(self, key):
-        raise NotImplementedError
+        del self._index[key]
 
-    def __missing__(self, key):
-        raise NotImplementedError
+    def __iter__(self) -> iter(str):
+        return iter(self._index)
 
-    def __iter__(self):
-        raise NotImplementedError
+    def __contains__(self, item) -> bool:
+        return item in self._index
 
-    def __reversed__(self):
-        raise NotImplementedError
+    def __repr__(self) -> str:
+        return repr(self._index)
 
-    def __contains__(self, item):
-        raise NotImplementedError
+    def __str__(self) -> str:
+        return ''.join([f'{key}: {value}\n' for key, value in self._index.items()])
 
-    def __repr__(self):
-        raise NotImplementedError
+    def __bool__(self) -> bool:
+        return bool(self._index)
 
-    def __str__(self):
-        raise NotImplementedError
+    def clear(self):
+        self._index.clear()
 
-    def __bool__(self):
-        raise NotImplementedError
+    @property
+    def index(self):
+        return self._index
