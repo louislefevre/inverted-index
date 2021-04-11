@@ -1,46 +1,47 @@
 import unittest
 
 from inverted_index.indexing import InvertedIndex, Posting
+from tests.textparser import clean_text
 
 
 class TestInvertedIndex(unittest.TestCase):
     def setUp(self):
-        self.documents = {1: "First document with text.",
-                          2: "Second document also with text.",
-                          3: "Third doc that might have text...",
-                          4: "Fourth one that definitely has some words.",
-                          5: "Last one that, just like the first doc, has word words."}
-        self.collection = {1: ['first', 'document', 'text'],
-                           2: ['second', 'document', 'also', 'text'],
-                           3: ['third', 'doc', 'might', 'text'],
-                           4: ['fourth', 'one', 'definit', 'word'],
-                           5: ['last', 'one', 'like', 'first', 'doc', 'word', 'word']}
-        self.postings = {'first': {1: Posting(freq=1, tfidf=0.0, positions=[0]),
-                                   5: Posting(freq=1, tfidf=0.0, positions=[3])},
-                         'document': {1: Posting(freq=1, tfidf=0.0, positions=[1]),
-                                      2: Posting(freq=1, tfidf=0.0, positions=[1])},
-                         'text': {1: Posting(freq=1, tfidf=0.0, positions=[2]),
-                                  2: Posting(freq=1, tfidf=0.0, positions=[3]),
-                                  3: Posting(freq=1, tfidf=0.0, positions=[3])},
-                         'second': {2: Posting(freq=1, tfidf=0.0, positions=[0])},
-                         'also': {2: Posting(freq=1, tfidf=0.0, positions=[2])},
-                         'third': {3: Posting(freq=1, tfidf=0.0, positions=[0])},
-                         'doc': {3: Posting(freq=1, tfidf=0.0, positions=[1]),
-                                 5: Posting(freq=1, tfidf=0.0, positions=[4])},
-                         'might': {3: Posting(freq=1, tfidf=0.0, positions=[2])},
-                         'fourth': {4: Posting(freq=1, tfidf=0.0, positions=[0])},
-                         'one': {4: Posting(freq=1, tfidf=0.0, positions=[1]),
-                                 5: Posting(freq=1, tfidf=0.0, positions=[1])},
-                         'definit': {4: Posting(freq=1, tfidf=0.0, positions=[2])},
-                         'word': {4: Posting(freq=1, tfidf=0.0, positions=[3]),
-                                  5: Posting(freq=2, tfidf=0.0, positions=[5, 6])},
-                         'last': {5: Posting(freq=1, tfidf=0.0, positions=[0])},
-                         'like': {5: Posting(freq=1, tfidf=0.0, positions=[2])}
+        self.documents = {'1': "First document with text.",
+                          '2': "Second document also with text.",
+                          '3': "Third doc that might have text...",
+                          '4': "Fourth one that definitely has some words.",
+                          '5': "Last one that, just like the first doc, has word words."}
+        self.collection = {'1': ['first', 'document', 'text'],
+                           '2': ['second', 'document', 'also', 'text'],
+                           '3': ['third', 'doc', 'might', 'text'],
+                           '4': ['fourth', 'one', 'definit', 'word'],
+                           '5': ['last', 'one', 'like', 'first', 'doc', 'word', 'word']}
+        self.postings = {'first': {'1': Posting(freq=1, tfidf=0.0, positions=[0]),
+                                   '5': Posting(freq=1, tfidf=0.0, positions=[3])},
+                         'document': {'1': Posting(freq=1, tfidf=0.0, positions=[1]),
+                                      '2': Posting(freq=1, tfidf=0.0, positions=[1])},
+                         'text': {'1': Posting(freq=1, tfidf=0.0, positions=[2]),
+                                  '2': Posting(freq=1, tfidf=0.0, positions=[3]),
+                                  '3': Posting(freq=1, tfidf=0.0, positions=[3])},
+                         'second': {'2': Posting(freq=1, tfidf=0.0, positions=[0])},
+                         'also': {'2': Posting(freq=1, tfidf=0.0, positions=[2])},
+                         'third': {'3': Posting(freq=1, tfidf=0.0, positions=[0])},
+                         'doc': {'3': Posting(freq=1, tfidf=0.0, positions=[1]),
+                                 '5': Posting(freq=1, tfidf=0.0, positions=[4])},
+                         'might': {'3': Posting(freq=1, tfidf=0.0, positions=[2])},
+                         'fourth': {'4': Posting(freq=1, tfidf=0.0, positions=[0])},
+                         'one': {'4': Posting(freq=1, tfidf=0.0, positions=[1]),
+                                 '5': Posting(freq=1, tfidf=0.0, positions=[1])},
+                         'definit': {'4': Posting(freq=1, tfidf=0.0, positions=[2])},
+                         'word': {'4': Posting(freq=1, tfidf=0.0, positions=[3]),
+                                  '5': Posting(freq=2, tfidf=0.0, positions=[5, 6])},
+                         'last': {'5': Posting(freq=1, tfidf=0.0, positions=[0])},
+                         'like': {'5': Posting(freq=1, tfidf=0.0, positions=[2])}
                          }
         self.vocab = self.postings.keys()
 
         self.inv_index = InvertedIndex()
-        self.inv_index.parse(self.documents)
+        self.inv_index.parse_collection(self.documents, preprocessor=clean_text)
 
     def test_len(self):
         self.assertEqual(len(self.inv_index), len(self.vocab))

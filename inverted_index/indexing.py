@@ -1,15 +1,13 @@
 import itertools
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Iterable
-
-from inverted_index.textparser import clean_text
+from typing import Iterable, Callable
 
 
 class InvertedIndex:
     def __init__(self):
         self._index: dict[str, 'InvertedList'] = {}
-        self._collection: dict[int, list[str]] = {}
+        self._collection: dict[str, list[str]] = {}
 
     def __len__(self) -> int:
         return len(self._index)
@@ -38,14 +36,24 @@ class InvertedIndex:
     def __bool__(self) -> bool:
         return bool(self._index)
 
-    def parse(self, documents: dict[int, str]):
-        for doc_id, text in documents.items():
-            tokens = clean_text(text)
-            self._collection[doc_id] = tokens
-            for pos, term in enumerate(tokens):
-                if term not in self._index:
-                    self._index[term] = InvertedList()
-                self._index[term].add_posting(doc_id, pos)
+    def add_document(self, doc_name: str, tokens: list[str]):
+        self._collection[doc_name] = tokens
+        for pos, term in enumerate(tokens):
+            if term not in self._index:
+                self._index[term] = InvertedList()
+            self._index[term].add_posting(doc_name, pos)
+
+    def add_collection(self, documents: dict[str, list[str]]):
+        for doc_name, tokens in documents.items():
+            self.add_document(doc_name, tokens)
+
+    def parse_document(self, doc_name: str, content: str, preprocessor: Callable[[str], list[str]]):
+        tokens = preprocessor(content)
+        self.add_document(doc_name, tokens)
+
+    def parse_collection(self, documents: dict[str, str], preprocessor: Callable[[str], list[str]]):
+        for doc_name, content in documents.items():
+            self.parse_document(doc_name, content, preprocessor)
 
     def clear(self):
         self._index.clear()
@@ -55,7 +63,7 @@ class InvertedIndex:
         return {key: value for key, value in sorted(self._index.items())}
 
     @property
-    def collection(self) -> dict[int, list[str]]:
+    def collection(self) -> dict[str, list[str]]:
         return self._collection
 
     @property
@@ -89,23 +97,23 @@ class InvertedIndex:
 
 class InvertedList:
     def __init__(self):
-        self._postings: dict[int, 'Posting'] = dict()
+        self._postings: dict[str, 'Posting'] = dict()
 
-    def add_posting(self, doc_id: int, pos: int):
-        if not self.contains_posting(doc_id):
-            self._postings[doc_id] = Posting()
-        posting = self._postings[doc_id]
+    def add_posting(self, doc_name: str, pos: int):
+        if not self.contains_posting(doc_name):
+            self._postings[doc_name] = Posting()
+        posting = self._postings[doc_name]
         posting.freq += 1
         posting.positions.append(pos)
 
-    def get_posting(self, doc_id: int) -> 'Posting':
-        return self._postings[doc_id]
+    def get_posting(self, doc_name: str) -> 'Posting':
+        return self._postings[doc_name]
 
-    def contains_posting(self, doc_id: int) -> bool:
-        return doc_id in self._postings
+    def contains_posting(self, doc_name: str) -> bool:
+        return doc_name in self._postings
 
     @property
-    def postings(self) -> dict[int, 'Posting']:
+    def postings(self) -> dict[str, 'Posting']:
         return self._postings
 
     @property
