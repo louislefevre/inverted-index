@@ -60,7 +60,7 @@ class InvertedIndex:
 
     @property
     def index(self) -> dict[str, 'InvertedList']:
-        return {key: value for key, value in sorted(self._index.items())}
+        return self._index
 
     @property
     def collection(self) -> dict[str, list[str]]:
