@@ -32,7 +32,7 @@ class InvertedIndex:
         return self._index
 
     @property
-    def collection(self) -> dict[str, list[str]]:
+    def documents(self) -> dict[str, list[str]]:
         return self._documents
 
     @property
@@ -45,7 +45,7 @@ class InvertedIndex:
 
     @property
     def avg_length(self) -> float:
-        return len(self.words) / len(self.collection)
+        return len(self.words) / len(self._documents)
 
     @property
     def word_counter(self) -> Counter[str]:
