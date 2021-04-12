@@ -44,20 +44,8 @@ class InvertedIndex:
         return sorted(self._index)
 
     @property
-    def collection_length(self) -> int:
-        return len(self._collection)
-
-    @property
-    def word_count(self) -> int:
-        return len(self.words)
-
-    @property
-    def vocab_count(self) -> int:
-        return len(self._index)
-
-    @property
     def avg_length(self) -> float:
-        return self.word_count / self.collection_length
+        return len(self.words) / len(self.collection)
 
     @property
     def word_counter(self) -> Counter[str]:
@@ -70,17 +58,9 @@ class InvertedIndex:
                 self._index[term] = InvertedList()
             self._index[term].add_posting(doc_name, pos)
 
-    def add_collection(self, documents: dict[str, list[str]]):
-        for doc_name, tokens in documents.items():
-            self.add_document(doc_name, tokens)
-
     def parse_document(self, doc_name: str, content: str, preprocessor: Callable[[str], list[str]]):
         tokens = preprocessor(content)
         self.add_document(doc_name, tokens)
-
-    def parse_collection(self, documents: dict[str, str], preprocessor: Callable[[str], list[str]]):
-        for doc_name, content in documents.items():
-            self.parse_document(doc_name, content, preprocessor)
 
     def remove_document(self, doc_name: str):
         for term in self._collection[doc_name]:
@@ -88,10 +68,6 @@ class InvertedIndex:
             if not self._index[term]:
                 del self._index[term]
         del self._collection[doc_name]
-
-    def remove_collection(self, documents: Iterable[str]):
-        for doc_name in documents:
-            self.remove_document(doc_name)
 
     def get_doc_postings(self, doc_name: str) -> list['Posting']:
         return [self._index[term].get_posting(doc_name) for term in self._collection[doc_name]]
