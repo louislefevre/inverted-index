@@ -89,6 +89,10 @@ class InvertedIndex:
                 del self._index[term]
         del self._collection[doc_name]
 
+    def remove_collection(self, documents: Iterable[str]):
+        for doc_name in documents:
+            self.remove_document(doc_name)
+
     def get_doc_postings(self, doc_name: str) -> list['Posting']:
         return [self._index[term].get_posting(doc_name) for term in self._collection[doc_name]]
 
