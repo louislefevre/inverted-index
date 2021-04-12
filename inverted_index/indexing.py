@@ -1,7 +1,7 @@
 import itertools
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Iterable, Callable
+from typing import Iterable, Callable, Union
 
 
 class InvertedIndex:
@@ -91,6 +91,13 @@ class InvertedIndex:
         for doc_name, content in documents.items():
             self.parse_document(doc_name, content, preprocessor)
 
+    def remove_document(self, doc_name: str):
+        for term in self._collection[doc_name]:
+            self._index[term].remove_posting(doc_name)
+            if not self._index[term]:
+                del self._index[term]
+        del self._collection[doc_name]
+
     def clear(self):
         self._index.clear()
 
@@ -98,6 +105,9 @@ class InvertedIndex:
 class InvertedList:
     def __init__(self):
         self._postings: dict[str, 'Posting'] = dict()
+
+    def __bool__(self):
+        return bool(self._postings)
 
     @property
     def postings(self) -> dict[str, 'Posting']:
@@ -116,6 +126,14 @@ class InvertedList:
 
     def get_posting(self, doc_name: str) -> 'Posting':
         return self._postings[doc_name]
+
+    def remove_posting(self, doc_name: str):
+        if self.contains_posting(doc_name):
+            del self._postings[doc_name]
+        raise KeyError("")
+
+    def pop_posting(self, doc_name) -> Union['Posting', None]:
+        return self._postings.get(doc_name, None)
 
     def contains_posting(self, doc_name: str) -> bool:
         return doc_name in self._postings
