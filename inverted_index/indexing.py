@@ -7,7 +7,7 @@ from typing import Iterable, Callable, Union
 class InvertedIndex:
     def __init__(self):
         self._index: dict[str, 'InvertedList'] = {}
-        self._collection: dict[str, list[str]] = {}
+        self._documents: dict[str, list[str]] = {}
 
     def __iter__(self) -> Iterable[str, 'InvertedList']:
         return self._index.items()
@@ -33,11 +33,11 @@ class InvertedIndex:
 
     @property
     def collection(self) -> dict[str, list[str]]:
-        return self._collection
+        return self._documents
 
     @property
     def words(self) -> list[str]:
-        return list(itertools.chain.from_iterable(self._collection.values()))
+        return list(itertools.chain.from_iterable(self._documents.values()))
 
     @property
     def vocab(self) -> list[str]:
@@ -52,7 +52,7 @@ class InvertedIndex:
         return Counter(self.words)
 
     def add_document(self, doc_name: str, tokens: list[str]):
-        self._collection[doc_name] = tokens
+        self._documents[doc_name] = tokens
         for pos, term in enumerate(tokens):
             if term not in self._index:
                 self._index[term] = InvertedList()
@@ -63,14 +63,14 @@ class InvertedIndex:
         self.add_document(doc_name, tokens)
 
     def remove_document(self, doc_name: str):
-        for term in self._collection[doc_name]:
+        for term in self._documents[doc_name]:
             self._index[term].remove_posting(doc_name)
             if not self._index[term]:
                 del self._index[term]
-        del self._collection[doc_name]
+        del self._documents[doc_name]
 
     def get_doc_postings(self, doc_name: str) -> list['Posting']:
-        return [self._index[term].get_posting(doc_name) for term in self._collection[doc_name]]
+        return [self._index[term].get_posting(doc_name) for term in self._documents[doc_name]]
 
     def get_term_postings(self, term: str) -> dict[str, 'Posting']:
         return self._index[term].postings
