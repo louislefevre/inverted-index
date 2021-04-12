@@ -1,7 +1,7 @@
 import itertools
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Iterable, Callable, Union
+from typing import Iterable, Union
 
 
 class InvertedIndex:
@@ -57,10 +57,6 @@ class InvertedIndex:
             if term not in self._index:
                 self._index[term] = InvertedList()
             self._index[term].add_posting(doc_name, pos)
-
-    def parse_document(self, doc_name: str, content: str, preprocessor: Callable[[str], list[str]]):
-        tokens = preprocessor(content)
-        self.add_document(doc_name, tokens)
 
     def remove_document(self, doc_name: str):
         for term in self._documents[doc_name]:
