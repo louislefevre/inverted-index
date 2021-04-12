@@ -36,28 +36,6 @@ class InvertedIndex:
     def __bool__(self) -> bool:
         return bool(self._index)
 
-    def add_document(self, doc_name: str, tokens: list[str]):
-        self._collection[doc_name] = tokens
-        for pos, term in enumerate(tokens):
-            if term not in self._index:
-                self._index[term] = InvertedList()
-            self._index[term].add_posting(doc_name, pos)
-
-    def add_collection(self, documents: dict[str, list[str]]):
-        for doc_name, tokens in documents.items():
-            self.add_document(doc_name, tokens)
-
-    def parse_document(self, doc_name: str, content: str, preprocessor: Callable[[str], list[str]]):
-        tokens = preprocessor(content)
-        self.add_document(doc_name, tokens)
-
-    def parse_collection(self, documents: dict[str, str], preprocessor: Callable[[str], list[str]]):
-        for doc_name, content in documents.items():
-            self.parse_document(doc_name, content, preprocessor)
-
-    def clear(self):
-        self._index.clear()
-
     @property
     def index(self) -> dict[str, 'InvertedList']:
         return self._index
@@ -94,10 +72,40 @@ class InvertedIndex:
     def word_counter(self) -> Counter[str]:
         return Counter(self.words)
 
+    def add_document(self, doc_name: str, tokens: list[str]):
+        self._collection[doc_name] = tokens
+        for pos, term in enumerate(tokens):
+            if term not in self._index:
+                self._index[term] = InvertedList()
+            self._index[term].add_posting(doc_name, pos)
+
+    def add_collection(self, documents: dict[str, list[str]]):
+        for doc_name, tokens in documents.items():
+            self.add_document(doc_name, tokens)
+
+    def parse_document(self, doc_name: str, content: str, preprocessor: Callable[[str], list[str]]):
+        tokens = preprocessor(content)
+        self.add_document(doc_name, tokens)
+
+    def parse_collection(self, documents: dict[str, str], preprocessor: Callable[[str], list[str]]):
+        for doc_name, content in documents.items():
+            self.parse_document(doc_name, content, preprocessor)
+
+    def clear(self):
+        self._index.clear()
+
 
 class InvertedList:
     def __init__(self):
         self._postings: dict[str, 'Posting'] = dict()
+
+    @property
+    def postings(self) -> dict[str, 'Posting']:
+        return self._postings
+
+    @property
+    def doc_freq(self) -> int:
+        return len(self._postings)
 
     def add_posting(self, doc_name: str, pos: int):
         if not self.contains_posting(doc_name):
@@ -111,14 +119,6 @@ class InvertedList:
 
     def contains_posting(self, doc_name: str) -> bool:
         return doc_name in self._postings
-
-    @property
-    def postings(self) -> dict[str, 'Posting']:
-        return self._postings
-
-    @property
-    def doc_freq(self) -> int:
-        return len(self._postings)
 
 
 @dataclass
