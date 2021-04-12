@@ -98,6 +98,12 @@ class InvertedIndex:
                 del self._index[term]
         del self._collection[doc_name]
 
+    def get_doc_postings(self, doc_name: str) -> list['Posting']:
+        return [self._index[term].get_posting(doc_name) for term in self._collection[doc_name]]
+
+    def get_term_postings(self, term: str) -> dict[str, 'Posting']:
+        return self._index[term].postings
+
     def clear(self):
         self._index.clear()
 
