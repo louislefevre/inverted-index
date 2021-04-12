@@ -12,8 +12,8 @@ class InvertedIndex:
     def __iter__(self) -> Iterable[str, 'InvertedList']:
         return self._index.items()
 
-    def __contains__(self, item) -> bool:
-        return item in self._index
+    def __contains__(self, doc_name: str) -> bool:
+        return doc_name in self._index
 
     def __len__(self) -> int:
         return len(self._index)
@@ -107,6 +107,9 @@ class InvertedList:
     def __init__(self):
         self._postings: dict[str, 'Posting'] = dict()
 
+    def __contains__(self, doc_name: str) -> bool:
+        return doc_name in self._postings
+
     def __bool__(self):
         return bool(self._postings)
 
@@ -119,25 +122,22 @@ class InvertedList:
         return len(self._postings)
 
     def add_posting(self, doc_name: str, pos: int):
-        if not self.contains_posting(doc_name):
+        if doc_name not in self._postings:
             self._postings[doc_name] = Posting()
         posting = self._postings[doc_name]
         posting.freq += 1
         posting.positions.append(pos)
 
-    def get_posting(self, doc_name: str) -> 'Posting':
-        return self._postings[doc_name]
-
     def remove_posting(self, doc_name: str):
-        if self.contains_posting(doc_name):
+        if doc_name in self._postings:
             del self._postings[doc_name]
-        raise KeyError("")
+        raise KeyError(f"Missing key '{doc_name}' - document does not exist")
 
     def pop_posting(self, doc_name) -> Union['Posting', None]:
         return self._postings.get(doc_name, None)
 
-    def contains_posting(self, doc_name: str) -> bool:
-        return doc_name in self._postings
+    def get_posting(self, doc_name: str) -> 'Posting':
+        return self._postings[doc_name]
 
 
 @dataclass
