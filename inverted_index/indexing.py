@@ -1,7 +1,7 @@
 import itertools
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Iterable, Union
+from typing import Iterator, Union
 
 
 class InvertedIndex:
@@ -9,8 +9,8 @@ class InvertedIndex:
         self._index: dict[str, 'InvertedList'] = {}
         self._documents: dict[str, list[str]] = {}
 
-    def __iter__(self) -> Iterable[str, 'InvertedList']:
-        return self._index.items()
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._index)
 
     def __contains__(self, doc_name: str) -> bool:
         return doc_name in self._index
