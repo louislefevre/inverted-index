@@ -1,7 +1,7 @@
 import itertools
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Iterator, Union
+from typing import Iterator
 
 
 class InvertedIndex:
@@ -26,10 +26,6 @@ class InvertedIndex:
 
     def __str__(self) -> str:
         return ''.join([f'{key}: {value.postings}\n' for key, value in self._index.items()])
-
-    @property
-    def index(self) -> dict[str, 'InvertedList']:
-        return self._index
 
     @property
     def documents(self) -> dict[str, list[str]]:
@@ -92,11 +88,8 @@ class InvertedIndex:
     def contains_word(self, doc_name: str, word: str) -> bool:
         return word in self._documents[doc_name]
 
-    def postings(self, term: str) -> dict[str, 'Posting']:
-        return self._index[term].postings
-
-    def document_postings(self, doc_name: str) -> list['Posting']:
-        return [self._index[term].get_posting(doc_name) for term in self._documents[doc_name]]
+    def postings(self, term: str) -> list[str]:
+        return list(self._index[term].postings)
 
     def document_frequency(self, term: str) -> int:
         return self._index[term].doc_freq
@@ -148,9 +141,6 @@ class InvertedList:
         if doc_name in self._postings:
             del self._postings[doc_name]
         raise KeyError(f"Missing key '{doc_name}' - document does not exist")
-
-    def pop_posting(self, doc_name) -> Union['Posting', None]:
-        return self._postings.get(doc_name, None)
 
     def get_posting(self, doc_name: str) -> 'Posting':
         return self._postings[doc_name]
