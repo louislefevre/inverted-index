@@ -100,6 +100,9 @@ class InvertedIndex:
     def tfidf(self, term: str, doc_name: str) -> float:
         return self._index[term].get_posting(doc_name).tfidf
 
+    def positions(self, term: str, doc_name: str) -> list[int]:
+        return self._index[term].get_posting(doc_name).positions
+
     def document_length(self, doc_name: str) -> int:
         return len(self._documents[doc_name])
 
@@ -150,4 +153,4 @@ class InvertedList:
 class Posting:
     freq: int = 0
     tfidf: float = 0.0
-    positions: list = field(default_factory=list)
+    positions: list[int] = field(default_factory=list)
