@@ -65,24 +65,24 @@ class InvertedIndex:
     def word_counter(self) -> Counter[str]:
         return Counter(self.words)
 
-    def add_document(self, doc_name: str, tokens: list[str]):
+    def add_document(self, doc_name: str, tokens: list[str]) -> None:
         self._documents[doc_name] = tokens
         for pos, term in enumerate(tokens):
             if term not in self._index:
                 self._index[term] = InvertedList()
             self._index[term].add_posting(doc_name, pos)
 
-    def remove_document(self, doc_name: str):
+    def remove_document(self, doc_name: str) -> None:
         for term in self._documents[doc_name]:
             self.remove_posting(term, doc_name)
         del self._documents[doc_name]
 
-    def remove_posting(self, term: str, doc_name: str):
+    def remove_posting(self, term: str, doc_name: str) -> None:
         self._index[term].remove_posting(doc_name)
         if not self._index[term]:
             del self._index[term]
 
-    def remove_term(self, term: str):
+    def remove_term(self, term: str) -> None:
         if term in self._index:
             del self._index[term]
 
@@ -104,7 +104,7 @@ class InvertedIndex:
     def frequency(self, term: str, doc_name: str) -> int:
         return self._index[term].get_posting(doc_name).freq
 
-    def tfidf(self, term: str, doc_name: str):
+    def tfidf(self, term: str, doc_name: str) -> float:
         return self._index[term].get_posting(doc_name).tfidf
 
     def document_length(self, doc_name: str) -> int:
@@ -115,7 +115,7 @@ class InvertedIndex:
             return sorted(set(self._documents[doc_name]))
         return list(set(self._documents[doc_name]))
 
-    def clear(self):
+    def clear(self) -> None:
         self._index.clear()
 
 
@@ -126,7 +126,7 @@ class InvertedList:
     def __contains__(self, doc_name: str) -> bool:
         return doc_name in self._postings
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self._postings)
 
     @property
@@ -137,14 +137,14 @@ class InvertedList:
     def doc_freq(self) -> int:
         return len(self._postings)
 
-    def add_posting(self, doc_name: str, pos: int):
+    def add_posting(self, doc_name: str, pos: int) -> None:
         if doc_name not in self._postings:
             self._postings[doc_name] = Posting()
         posting = self._postings[doc_name]
         posting.freq += 1
         posting.positions.append(pos)
 
-    def remove_posting(self, doc_name: str):
+    def remove_posting(self, doc_name: str) -> None:
         if doc_name in self._postings:
             del self._postings[doc_name]
         raise KeyError(f"Missing key '{doc_name}' - document does not exist")
