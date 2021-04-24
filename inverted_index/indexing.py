@@ -40,8 +40,22 @@ class InvertedIndex:
         return list(itertools.chain.from_iterable(self._documents.values()))
 
     @property
-    def vocab(self) -> list[str]:
-        return sorted(self._index)
+    def vocab(self, sort=True) -> list[str]:
+        if sort:
+            return sorted(self._index)
+        return list(self._index)
+
+    @property
+    def document_count(self) -> int:
+        return len(self._documents)
+
+    @property
+    def word_count(self) -> int:
+        return len(self.words)
+
+    @property
+    def vocab_count(self) -> int:
+        return len(self._index)
 
     @property
     def avg_length(self) -> float:
@@ -60,16 +74,46 @@ class InvertedIndex:
 
     def remove_document(self, doc_name: str):
         for term in self._documents[doc_name]:
-            self._index[term].remove_posting(doc_name)
-            if not self._index[term]:
-                del self._index[term]
+            self.remove_posting(term, doc_name)
         del self._documents[doc_name]
 
-    def get_doc_postings(self, doc_name: str) -> list['Posting']:
+    def remove_posting(self, term: str, doc_name: str):
+        self._index[term].remove_posting(doc_name)
+        if not self._index[term]:
+            del self._index[term]
+
+    def remove_term(self, term: str):
+        if term in self._index:
+            del self._index[term]
+
+    def contains_posting(self, term: str, doc_name: str) -> bool:
+        return doc_name in self._index[term]
+
+    def contains_word(self, doc_name: str, word: str) -> bool:
+        return word in self._documents[doc_name]
+
+    def postings(self, term: str) -> dict[str, 'Posting']:
+        return self._index[term].postings
+
+    def document_postings(self, doc_name: str) -> list['Posting']:
         return [self._index[term].get_posting(doc_name) for term in self._documents[doc_name]]
 
-    def get_term_postings(self, term: str) -> dict[str, 'Posting']:
-        return self._index[term].postings
+    def document_frequency(self, term: str) -> int:
+        return self._index[term].doc_freq
+
+    def frequency(self, term: str, doc_name: str) -> int:
+        return self._index[term].get_posting(doc_name).freq
+
+    def tfidf(self, term: str, doc_name: str):
+        return self._index[term].get_posting(doc_name).tfidf
+
+    def document_length(self, doc_name: str) -> int:
+        return len(self._documents[doc_name])
+
+    def document_vocab(self, doc_name: str, sort=True) -> list[str]:
+        if sort:
+            return sorted(set(self._documents[doc_name]))
+        return list(set(self._documents[doc_name]))
 
     def clear(self):
         self._index.clear()
