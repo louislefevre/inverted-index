@@ -1,7 +1,8 @@
-import itertools
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Iterator
+
+import itertools
 
 
 class InvertedIndex:
@@ -70,38 +71,21 @@ class InvertedIndex:
 
     def remove_document(self, doc_name: str) -> None:
         for term in self._documents[doc_name]:
-            self.remove_posting(term, doc_name)
+            inv_list = self._index[term]
+            inv_list.remove_posting(doc_name)
+            if not inv_list:
+                del self._index[term]
         del self._documents[doc_name]
 
-    def remove_posting(self, term: str, doc_name: str) -> None:
-        self._index[term].remove_posting(doc_name)
-        if not self._index[term]:
-            del self._index[term]
+    def get_term(self, term: str) -> 'InvertedList':
+        return self._index[term]
 
     def remove_term(self, term: str) -> None:
         if term in self._index:
             del self._index[term]
 
-    def contains_posting(self, term: str, doc_name: str) -> bool:
-        return doc_name in self._index[term]
-
     def contains_word(self, doc_name: str, word: str) -> bool:
         return word in self._documents[doc_name]
-
-    def postings(self, term: str) -> list[str]:
-        return list(self._index[term].postings)
-
-    def document_frequency(self, term: str) -> int:
-        return self._index[term].doc_freq
-
-    def frequency(self, term: str, doc_name: str) -> int:
-        return self._index[term].get_posting(doc_name).freq
-
-    def tfidf(self, term: str, doc_name: str) -> float:
-        return self._index[term].get_posting(doc_name).tfidf
-
-    def positions(self, term: str, doc_name: str) -> list[int]:
-        return self._index[term].get_posting(doc_name).positions
 
     def document_length(self, doc_name: str) -> int:
         return len(self._documents[doc_name])
@@ -147,6 +131,15 @@ class InvertedList:
 
     def get_posting(self, doc_name: str) -> 'Posting':
         return self._postings[doc_name]
+
+    def frequency(self, doc_name: str) -> int:
+        return self.get_posting(doc_name).freq
+
+    def tfidf(self, doc_name: str) -> float:
+        return self.get_posting(doc_name).tfidf
+
+    def positions(self, doc_name: str) -> list[int]:
+        return self.get_posting(doc_name).positions
 
 
 @dataclass

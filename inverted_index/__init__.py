@@ -1,1 +1,1 @@
-from inverted_index.indexing import InvertedIndex
+from inverted_index.indexing import InvertedIndex, InvertedList
