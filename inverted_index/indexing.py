@@ -1,3 +1,4 @@
+import copy
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Iterator, Union
@@ -94,6 +95,9 @@ class InvertedIndex:
     def clear(self) -> None:
         self._index.clear()
 
+    def clone(self) -> 'InvertedIndex':
+        return copy.deepcopy(self)
+
 
 class InvertedList:
     def __init__(self):
@@ -142,6 +146,9 @@ class InvertedList:
 
     def clear(self) -> None:
         self._postings.clear()
+
+    def clone(self) -> 'InvertedList':
+        return copy.deepcopy(self)
 
 
 @dataclass
