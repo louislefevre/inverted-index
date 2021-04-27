@@ -62,25 +62,25 @@ class InvertedIndex:
     def word_counter(self) -> Counter[str]:
         return Counter(self.words)
 
-    def add_document(self, doc_name: str, tokens: list[str]) -> None:
+    def add(self, doc_name: str, tokens: list[str]) -> None:
         self._documents[doc_name] = tokens
         for pos, term in enumerate(tokens):
             if term not in self._index:
                 self._index[term] = InvertedList()
-            self._index[term].add_posting(doc_name, pos)
+            self._index[term].add(doc_name, pos)
 
-    def remove_document(self, doc_name: str) -> None:
+    def document(self, doc_name: str) -> None:
         for term in self._documents[doc_name]:
             inv_list = self._index[term]
-            inv_list.remove_posting(doc_name)
+            inv_list.remove(doc_name)
             if not inv_list:
                 del self._index[term]
         del self._documents[doc_name]
 
-    def get_term(self, term: str) -> 'InvertedList':
+    def get(self, term: str) -> 'InvertedList':
         return self._index[term]
 
-    def remove_term(self, term: str) -> None:
+    def remove(self, term: str) -> None:
         if term in self._index:
             del self._index[term]
 
@@ -117,29 +117,29 @@ class InvertedList:
     def doc_freq(self) -> int:
         return len(self._postings)
 
-    def add_posting(self, doc_name: str, pos: int) -> None:
+    def add(self, doc_name: str, pos: int) -> None:
         if doc_name not in self._postings:
             self._postings[doc_name] = Posting()
         posting = self._postings[doc_name]
         posting.freq += 1
         posting.positions.append(pos)
 
-    def remove_posting(self, doc_name: str) -> None:
+    def remove(self, doc_name: str) -> None:
         if doc_name in self._postings:
             del self._postings[doc_name]
         raise KeyError(f"Missing key '{doc_name}' - document does not exist")
 
-    def get_posting(self, doc_name: str) -> 'Posting':
+    def get(self, doc_name: str) -> 'Posting':
         return self._postings[doc_name]
 
     def frequency(self, doc_name: str) -> int:
-        return self.get_posting(doc_name).freq
+        return self.get(doc_name).freq
 
     def tfidf(self, doc_name: str) -> float:
-        return self.get_posting(doc_name).tfidf
+        return self.get(doc_name).tfidf
 
     def positions(self, doc_name: str) -> list[int]:
-        return self.get_posting(doc_name).positions
+        return self.get(doc_name).positions
 
 
 @dataclass
