@@ -2,7 +2,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Iterator, Union
 
-import itertools
+from itertools import chain
 
 
 class InvertedIndex:
@@ -26,7 +26,7 @@ class InvertedIndex:
         return repr(self._index)
 
     def __str__(self) -> str:
-        return ''.join([f'{key}: {value.postings}\n' for key, value in self._index.items()])
+        return ''.join([f'{key}: {str(value)}\n' for key, value in self._index.items()])
 
     @property
     def index(self) -> dict[str, 'InvertedList']:
@@ -37,7 +37,7 @@ class InvertedIndex:
         return self._documents
 
     def words(self, doc_name: str = None, sort=False) -> list[str]:
-        words = self._documents[doc_name] if doc_name else list(itertools.chain.from_iterable(self._documents.values()))
+        words = self._documents[doc_name] if doc_name else list(chain.from_iterable(self._documents.values()))
         if sort:
             return sorted(words)
         return words
@@ -99,18 +99,31 @@ class InvertedList:
     def __init__(self):
         self._postings: dict[str, 'Posting'] = dict()
 
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._postings)
+
     def __contains__(self, doc_name: str) -> bool:
         return doc_name in self._postings
 
+    def __len__(self) -> int:
+        return len(self._postings)
+
     def __bool__(self) -> bool:
         return bool(self._postings)
+
+    def __repr__(self) -> str:
+        return repr(self._postings)
+
+    def __str__(self) -> str:
+        return ''.join([f'{key}: ({value.freq, value.tfidf, value.positions})\n'
+                        for key, value in self._postings.items()])
 
     @property
     def postings(self) -> dict[str, 'Posting']:
         return self._postings
 
     def doc_freq(self) -> int:
-        return len(self._postings)
+        return len(self)
 
     def add(self, doc_name: str, pos: int) -> None:
         if doc_name not in self._postings:
