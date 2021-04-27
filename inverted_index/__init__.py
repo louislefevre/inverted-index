@@ -1,1 +1,1 @@
-from inverted_index.indexing import InvertedIndex, InvertedList
+from inverted_index.indexing import InvertedIndex, InvertedList, Posting
