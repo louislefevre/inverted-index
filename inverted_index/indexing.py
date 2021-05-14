@@ -102,7 +102,11 @@ class InvertedIndex:
         self._index.update(index.index)
 
     def merge(self, index: 'InvertedIndex') -> None:
-        return NotImplementedError
+        for term, posting_list in index.index.items():
+            if term in self._index:
+                self._index[term].merge(posting_list)
+            else:
+                self._index[term] = posting_list
 
 
 class PostingList:
@@ -158,6 +162,14 @@ class PostingList:
 
     def clone(self) -> 'PostingList':
         return copy.deepcopy(self)
+
+    def update(self, posting_list: 'PostingList') -> None:
+        self._postings.update(posting_list.postings)
+
+    def merge(self, posting_list: 'PostingList') -> None:
+        for doc_id, posting in posting_list.postings.items():
+            if doc_id not in self._postings:
+                self._postings[doc_id] = posting
 
 
 @dataclass
