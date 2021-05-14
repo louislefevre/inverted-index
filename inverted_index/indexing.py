@@ -71,7 +71,7 @@ class InvertedIndex:
         for pos, term in enumerate(tokens):
             if term not in self._index:
                 self._index[term] = PostingList()
-            self._index[term].add(doc_id, pos, track_positions=track_positions)
+            self._index[term]._add(doc_id, pos, track_positions=track_positions)
 
     def get(self, term: str) -> 'PostingList':
         return self._index[term]
@@ -87,7 +87,7 @@ class InvertedIndex:
     def purge(self, doc_id: Hashable) -> None:
         for word in self._documents[doc_id]:
             inv_list = self._index[word]
-            inv_list.remove(doc_id)
+            inv_list._remove(doc_id)
             if not inv_list:
                 del self._index[word]
         del self._documents[doc_id]
@@ -104,7 +104,7 @@ class InvertedIndex:
     def merge(self, index: 'InvertedIndex') -> None:
         for term, posting_list in index.index.items():
             if term in self._index:
-                self._index[term].merge(posting_list)
+                self._index[term]._merge(posting_list)
             else:
                 self._index[term] = posting_list
 
@@ -139,7 +139,7 @@ class PostingList:
     def doc_freq(self) -> int:
         return len(self)
 
-    def add(self, doc_id: Hashable, pos: int, track_positions=False) -> None:
+    def _add(self, doc_id: Hashable, pos: int, track_positions=False) -> None:
         if doc_id not in self._postings:
             self._postings[doc_id] = Posting()
         posting = self._postings[doc_id]
@@ -149,7 +149,7 @@ class PostingList:
                 posting.positions = list()
             posting.positions.append(pos)
 
-    def remove(self, doc_id: Hashable) -> None:
+    def _remove(self, doc_id: Hashable) -> None:
         if doc_id not in self._postings:
             raise KeyError(f"Missing key '{doc_id}' - document is not present")
         del self._postings[doc_id]
@@ -157,16 +157,13 @@ class PostingList:
     def get(self, doc_id: Hashable) -> 'Posting':
         return self._postings[doc_id]
 
-    def clear(self) -> None:
-        self._postings.clear()
-
     def clone(self) -> 'PostingList':
         return copy.deepcopy(self)
 
-    def update(self, posting_list: 'PostingList') -> None:
+    def _update(self, posting_list: 'PostingList') -> None:
         self._postings.update(posting_list.postings)
 
-    def merge(self, posting_list: 'PostingList') -> None:
+    def _merge(self, posting_list: 'PostingList') -> None:
         for doc_id, posting in posting_list.postings.items():
             if doc_id not in self._postings:
                 self._postings[doc_id] = posting
