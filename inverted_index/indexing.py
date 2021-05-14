@@ -26,7 +26,7 @@ class InvertedIndex:
         return repr(self._index)
 
     def __str__(self) -> str:
-        return ''.join([f'{key}: {str(value)}\n' for key, value in self._index.items()])
+        return ''.join([f'{key}: {str(value)}' for key, value in self._index.items()])
 
     @property
     def index(self) -> dict[Hashable, 'PostingList']:
