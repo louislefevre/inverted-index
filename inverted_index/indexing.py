@@ -1,17 +1,17 @@
 import copy
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Iterator, Union
+from typing import Iterator, Union, Hashable
 
 from itertools import chain
 
 
 class InvertedIndex:
     def __init__(self):
-        self._index: dict[str, 'PostingList'] = {}
-        self._documents: dict[str, list[str]] = {}
+        self._index: dict[Hashable, 'PostingList'] = {}
+        self._documents: dict[Hashable, list[str]] = {}
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[Hashable]:
         return iter(self._index)
 
     def __contains__(self, doc_id: str) -> bool:
@@ -30,30 +30,30 @@ class InvertedIndex:
         return ''.join([f'{key}: {str(value)}\n' for key, value in self._index.items()])
 
     @property
-    def index(self) -> dict[str, 'PostingList']:
+    def index(self) -> dict[Hashable, 'PostingList']:
         return self._index
 
     @property
-    def documents(self) -> dict[str, list[str]]:
+    def documents(self) -> dict[Hashable, list[str]]:
         return self._documents
 
-    def words(self, doc_id: str = None, sort=False) -> list[str]:
+    def words(self, doc_id: Hashable = None, sort=False) -> list[str]:
         words = self._documents[doc_id] if doc_id else list(chain.from_iterable(self._documents.values()))
         if sort:
             return sorted(words)
         return words
 
-    def vocab(self, doc_id: str = None, sort=False) -> list[str]:
+    def vocab(self, doc_id: Hashable = None, sort=False) -> list[str]:
         vocab = set(self._documents[doc_id]) if doc_id else self._index
         if sort:
             return sorted(vocab)
         return list(vocab)
 
-    def word_count(self, doc_id: str = None) -> int:
+    def word_count(self, doc_id: Hashable = None) -> int:
         words = self.words(doc_id=doc_id)
         return len(words)
 
-    def vocab_count(self, doc_id: str = None) -> int:
+    def vocab_count(self, doc_id: Hashable = None) -> int:
         vocab = self.vocab(doc_id=doc_id)
         return len(vocab)
 
@@ -63,10 +63,10 @@ class InvertedIndex:
     def avg_length(self) -> float:
         return len(self.words()) / len(self._documents)
 
-    def word_counter(self, doc_id: str = None) -> Counter[str]:
+    def word_counter(self, doc_id: Hashable = None) -> Counter[str]:
         return Counter(self.words(doc_id=doc_id))
 
-    def add(self, doc_id: str, tokens: list[str]) -> None:
+    def add(self, doc_id: Hashable, tokens: list[str]) -> None:
         self._documents[doc_id] = tokens
         for pos, term in enumerate(tokens):
             if term not in self._index:
@@ -84,7 +84,7 @@ class InvertedIndex:
     def pop(self, term: str) -> Union['PostingList', None]:
         return self._index.pop(term, None)
 
-    def purge(self, doc_id: str) -> None:
+    def purge(self, doc_id: Hashable) -> None:
         for word in self._documents[doc_id]:
             inv_list = self._index[word]
             inv_list.remove(doc_id)
@@ -107,12 +107,12 @@ class InvertedIndex:
 
 class PostingList:
     def __init__(self):
-        self._postings: dict[str, 'Posting'] = dict()
+        self._postings: dict[Hashable, 'Posting'] = dict()
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[Hashable]:
         return iter(self._postings)
 
-    def __contains__(self, doc_id: str) -> bool:
+    def __contains__(self, doc_id: Hashable) -> bool:
         return doc_id in self._postings
 
     def __len__(self) -> int:
@@ -129,25 +129,25 @@ class PostingList:
                         for key, value in self._postings.items()])
 
     @property
-    def postings(self) -> dict[str, 'Posting']:
+    def postings(self) -> dict[Hashable, 'Posting']:
         return self._postings
 
     def doc_freq(self) -> int:
         return len(self)
 
-    def add(self, doc_id: str, pos: int) -> None:
+    def add(self, doc_id: Hashable, pos: int) -> None:
         if doc_id not in self._postings:
             self._postings[doc_id] = Posting()
         posting = self._postings[doc_id]
         posting.freq += 1
         posting.positions.append(pos)
 
-    def remove(self, doc_id: str) -> None:
+    def remove(self, doc_id: Hashable) -> None:
         if doc_id not in self._postings:
             raise KeyError(f"Missing key '{doc_id}' - document is not present")
         del self._postings[doc_id]
 
-    def get(self, doc_id: str) -> 'Posting':
+    def get(self, doc_id: Hashable) -> 'Posting':
         return self._postings[doc_id]
 
     def clear(self) -> None:
