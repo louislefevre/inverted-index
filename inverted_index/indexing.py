@@ -1,6 +1,6 @@
 import copy
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Iterator, Union, Hashable
 
 from itertools import chain
@@ -66,12 +66,12 @@ class InvertedIndex:
     def word_counter(self, doc_id: Hashable = None) -> Counter[str]:
         return Counter(self.words(doc_id=doc_id))
 
-    def add(self, doc_id: Hashable, tokens: list[str]) -> None:
+    def add(self, doc_id: Hashable, tokens: list[str], track_positions=False) -> None:
         self._documents[doc_id] = tokens
         for pos, term in enumerate(tokens):
             if term not in self._index:
                 self._index[term] = PostingList()
-            self._index[term].add(doc_id, pos)
+            self._index[term].add(doc_id, pos, track_positions=track_positions)
 
     def get(self, term: str) -> 'PostingList':
         return self._index[term]
@@ -125,7 +125,7 @@ class PostingList:
         return repr(self._postings)
 
     def __str__(self) -> str:
-        return ''.join([f'{key}: ({value.freq, value.tfidf, value.positions})\n'
+        return ''.join([f'{key}: ({value.freq, value.positions if not None else "[]"})\n'
                         for key, value in self._postings.items()])
 
     @property
@@ -135,12 +135,15 @@ class PostingList:
     def doc_freq(self) -> int:
         return len(self)
 
-    def add(self, doc_id: Hashable, pos: int) -> None:
+    def add(self, doc_id: Hashable, pos: int, track_positions=False) -> None:
         if doc_id not in self._postings:
             self._postings[doc_id] = Posting()
         posting = self._postings[doc_id]
         posting.freq += 1
-        posting.positions.append(pos)
+        if track_positions:
+            if posting.positions is None:
+                posting.positions = list()
+            posting.positions.append(pos)
 
     def remove(self, doc_id: Hashable) -> None:
         if doc_id not in self._postings:
@@ -160,5 +163,4 @@ class PostingList:
 @dataclass
 class Posting:
     freq: int = 0
-    tfidf: float = 0.0
-    positions: list[int] = field(default_factory=list)
+    positions: list[int] = None
