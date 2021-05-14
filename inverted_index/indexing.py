@@ -1,6 +1,5 @@
 import copy
 from collections import Counter
-from dataclasses import dataclass
 from typing import Iterator, Union, Hashable
 
 from itertools import chain
@@ -129,36 +128,21 @@ class PostingList:
         return repr(self._postings)
 
     def __str__(self) -> str:
-        return ''.join([f'{key}: ({value.freq, value.positions if not None else "[]"})\n'
+        return ''.join([f'{key}: ({value.frequency, value.positions if not None else "[]"})\n'
                         for key, value in self._postings.items()])
-
-    @property
-    def postings(self) -> dict[Hashable, 'Posting']:
-        return self._postings
-
-    def doc_freq(self) -> int:
-        return len(self)
 
     def _add(self, doc_id: Hashable, pos: int, track_positions=False) -> None:
         if doc_id not in self._postings:
             self._postings[doc_id] = Posting()
         posting = self._postings[doc_id]
-        posting.freq += 1
+        posting._increment()
         if track_positions:
-            if posting.positions is None:
-                posting.positions = list()
-            posting.positions.append(pos)
+            posting._add_pos(pos)
 
     def _remove(self, doc_id: Hashable) -> None:
         if doc_id not in self._postings:
             raise KeyError(f"Missing key '{doc_id}' - document is not present")
         del self._postings[doc_id]
-
-    def get(self, doc_id: Hashable) -> 'Posting':
-        return self._postings[doc_id]
-
-    def clone(self) -> 'PostingList':
-        return copy.deepcopy(self)
 
     def _update(self, posting_list: 'PostingList') -> None:
         self._postings.update(posting_list.postings)
@@ -168,8 +152,35 @@ class PostingList:
             if doc_id not in self._postings:
                 self._postings[doc_id] = posting
 
+    @property
+    def postings(self) -> dict[Hashable, 'Posting']:
+        return self._postings
 
-@dataclass
+    def document_frequency(self) -> int:
+        return len(self)
+
+    def get(self, doc_id: Hashable) -> 'Posting':
+        return self._postings[doc_id]
+
+    def clone(self) -> 'PostingList':
+        return copy.deepcopy(self)
+
+
 class Posting:
-    freq: int = 0
-    positions: list[int] = None
+    def __init__(self):
+        self._frequency: int = 0
+        self._positions: list[int] = []
+
+    def _increment(self) -> None:
+        self._frequency += 1
+
+    def _add_pos(self, pos: int) -> None:
+        self._positions.append(pos)
+
+    @property
+    def frequency(self):
+        return self._frequency
+
+    @property
+    def positions(self) -> list[int]:
+        return self._positions
