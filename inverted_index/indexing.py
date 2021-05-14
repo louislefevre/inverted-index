@@ -59,7 +59,7 @@ class InvertedIndex:
     def document_count(self) -> int:
         return len(self._documents)
 
-    def avg_length(self) -> float:
+    def average_length(self) -> float:
         return len(self.words()) / len(self._documents)
 
     def word_counter(self, doc_id: Hashable = None) -> Counter[str]:
