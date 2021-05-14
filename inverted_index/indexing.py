@@ -98,6 +98,12 @@ class InvertedIndex:
     def clone(self) -> 'InvertedIndex':
         return copy.deepcopy(self)
 
+    def update(self, index: 'InvertedIndex') -> None:
+        self._index.update(index.index)
+
+    def merge(self, index: 'InvertedIndex') -> None:
+        return NotImplementedError
+
 
 class InvertedList:
     def __init__(self):
