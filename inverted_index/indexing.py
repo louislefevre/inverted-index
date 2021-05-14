@@ -8,7 +8,7 @@ from itertools import chain
 
 class InvertedIndex:
     def __init__(self):
-        self._index: dict[str, 'InvertedList'] = {}
+        self._index: dict[str, 'PostingList'] = {}
         self._documents: dict[str, list[str]] = {}
 
     def __iter__(self) -> Iterator[str]:
@@ -30,7 +30,7 @@ class InvertedIndex:
         return ''.join([f'{key}: {str(value)}\n' for key, value in self._index.items()])
 
     @property
-    def index(self) -> dict[str, 'InvertedList']:
+    def index(self) -> dict[str, 'PostingList']:
         return self._index
 
     @property
@@ -70,10 +70,10 @@ class InvertedIndex:
         self._documents[doc_name] = tokens
         for pos, term in enumerate(tokens):
             if term not in self._index:
-                self._index[term] = InvertedList()
+                self._index[term] = PostingList()
             self._index[term].add(doc_name, pos)
 
-    def get(self, term: str) -> 'InvertedList':
+    def get(self, term: str) -> 'PostingList':
         return self._index[term]
 
     def remove(self, term: str) -> None:
@@ -81,7 +81,7 @@ class InvertedIndex:
             raise KeyError(f"Missing key '{term}' - term is not present")
         del self._index[term]
 
-    def pop(self, term: str) -> Union['InvertedList', None]:
+    def pop(self, term: str) -> Union['PostingList', None]:
         return self._index.pop(term, None)
 
     def purge(self, doc_name: str) -> None:
@@ -105,7 +105,7 @@ class InvertedIndex:
         return NotImplementedError
 
 
-class InvertedList:
+class PostingList:
     def __init__(self):
         self._postings: dict[str, 'Posting'] = dict()
 
@@ -153,7 +153,7 @@ class InvertedList:
     def clear(self) -> None:
         self._postings.clear()
 
-    def clone(self) -> 'InvertedList':
+    def clone(self) -> 'PostingList':
         return copy.deepcopy(self)
 
 
