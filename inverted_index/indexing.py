@@ -60,7 +60,9 @@ class InvertedIndex:
         return len(self._documents)
 
     def average_length(self) -> float:
-        return len(self.words()) / len(self._documents)
+        if len(self._documents) != 0:
+            return len(self.words()) / len(self._documents)
+        return 0.0
 
     def word_counter(self, doc_id: Hashable = None) -> Counter[str]:
         return Counter(self.words(doc_id=doc_id))
@@ -91,6 +93,7 @@ class InvertedIndex:
 
     def clear(self) -> None:
         self._index.clear()
+        self._documents.clear()
 
     def clone(self) -> 'InvertedIndex':
         return copy.deepcopy(self)
