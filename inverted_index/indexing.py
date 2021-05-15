@@ -28,6 +28,11 @@ class InvertedIndex:
     def __str__(self) -> str:
         return ''.join([f'{key}: {str(value)}' for key, value in self._index.items()])
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self._index == other._index and self._documents == other._documents
+
     @property
     def index(self) -> dict[Hashable, 'PostingList']:
         return self._index
@@ -132,6 +137,11 @@ class PostingList:
         return ''.join([f'{key}: ({value.frequency, value.positions if not None else "[]"})\n'
                         for key, value in self._postings.items()])
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self._postings == other._postings
+
     def _add(self, doc_id: Hashable, pos: int, track_positions=False) -> None:
         if doc_id not in self._postings:
             self._postings[doc_id] = Posting()
@@ -169,6 +179,11 @@ class Posting:
     def __init__(self):
         self._frequency: int = 0
         self._positions: list[int] = []
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self._frequency == other._frequency and self._positions == other._positions
 
     def _increment(self) -> None:
         self._frequency += 1
