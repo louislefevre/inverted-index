@@ -105,6 +105,7 @@ class InvertedIndex:
 
     def update(self, index: 'InvertedIndex') -> None:
         self._index.update(index.index)
+        self._documents.update(index.documents)
 
     def merge(self, index: 'InvertedIndex') -> None:
         for term, posting_list in index.index.items():
@@ -112,6 +113,7 @@ class InvertedIndex:
                 self._index[term]._merge(posting_list)
             else:
                 self._index[term] = posting_list
+        self._documents.update(index.documents)
 
 
 class PostingList:
