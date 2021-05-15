@@ -13,7 +13,7 @@ class InvertedIndex:
     def __iter__(self) -> Iterator[Hashable]:
         return iter(self._index)
 
-    def __contains__(self, doc_id: str) -> bool:
+    def __contains__(self, doc_id: Hashable) -> bool:
         return doc_id in self._index
 
     def __len__(self) -> int:
