@@ -76,8 +76,6 @@ class InvertedIndex:
         return self._index[term]
 
     def remove(self, term: str) -> None:
-        if term not in self._index:
-            raise KeyError(f"Missing key '{term}' - term is not present")
         del self._index[term]
 
     def pop(self, term: str) -> Union['PostingList', None]:
@@ -140,8 +138,6 @@ class PostingList:
             posting._add_pos(pos)
 
     def _remove(self, doc_id: Hashable) -> None:
-        if doc_id not in self._postings:
-            raise KeyError(f"Missing key '{doc_id}' - document is not present")
         del self._postings[doc_id]
 
     def _update(self, posting_list: 'PostingList') -> None:
