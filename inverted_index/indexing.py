@@ -84,7 +84,7 @@ class InvertedIndex:
         return self._index.pop(term, None)
 
     def purge(self, doc_id: Hashable) -> None:
-        for word in self._documents[doc_id]:
+        for word in set(self._documents[doc_id]):
             posting_list = self._index[word]
             posting_list._remove(doc_id)
             if not posting_list:
