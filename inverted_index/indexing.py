@@ -1,14 +1,14 @@
 import copy
 from collections import Counter
-from typing import Iterator, Union, Hashable
+from typing import Iterator, Union, Hashable, Dict, List, Counter as CounterType
 
 from itertools import chain
 
 
 class InvertedIndex:
     def __init__(self):
-        self._index: dict[Hashable, 'PostingList'] = {}
-        self._documents: dict[Hashable, list[str]] = {}
+        self._index: Dict[Hashable, 'PostingList'] = {}
+        self._documents: Dict[Hashable, List[str]] = {}
 
     def __iter__(self) -> Iterator[Hashable]:
         return iter(self._index)
@@ -34,20 +34,20 @@ class InvertedIndex:
         return self._index == other._index and self._documents == other._documents
 
     @property
-    def index(self) -> dict[Hashable, 'PostingList']:
+    def index(self) -> Dict[Hashable, 'PostingList']:
         return self._index
 
     @property
-    def documents(self) -> dict[Hashable, list[str]]:
+    def documents(self) -> Dict[Hashable, List[str]]:
         return self._documents
 
-    def words(self, doc_id: Hashable = None, sort=False) -> list[str]:
+    def words(self, doc_id: Hashable = None, sort=False) -> List[str]:
         words = self._documents[doc_id] if doc_id else list(chain.from_iterable(self._documents.values()))
         if sort:
             return sorted(words)
         return words
 
-    def vocab(self, doc_id: Hashable = None, sort=False) -> list[str]:
+    def vocab(self, doc_id: Hashable = None, sort=False) -> List[str]:
         vocab = set(self._documents[doc_id]) if doc_id else self._index
         if sort:
             return sorted(vocab)
@@ -69,10 +69,10 @@ class InvertedIndex:
             return len(self.words()) / len(self._documents)
         return 0.0
 
-    def word_counter(self, doc_id: Hashable = None) -> Counter[str]:
+    def word_counter(self, doc_id: Hashable = None) -> CounterType[str]:
         return Counter(self.words(doc_id=doc_id))
 
-    def add(self, doc_id: Hashable, tokens: list[str], track_positions=False) -> None:
+    def add(self, doc_id: Hashable, tokens: List[str], track_positions=False) -> None:
         self._documents[doc_id] = tokens
         for pos, term in enumerate(tokens):
             if term not in self._index:
@@ -118,7 +118,7 @@ class InvertedIndex:
 
 class PostingList:
     def __init__(self):
-        self._postings: dict[Hashable, 'Posting'] = dict()
+        self._postings: Dict[Hashable, 'Posting'] = dict()
 
     def __iter__(self) -> Iterator[Hashable]:
         return iter(self._postings)
@@ -164,7 +164,7 @@ class PostingList:
                 self._postings[doc_id] = posting
 
     @property
-    def postings(self) -> dict[Hashable, 'Posting']:
+    def postings(self) -> Dict[Hashable, 'Posting']:
         return self._postings
 
     def document_frequency(self) -> int:
@@ -180,7 +180,7 @@ class PostingList:
 class Posting:
     def __init__(self):
         self._frequency: int = 0
-        self._positions: list[int] = []
+        self._positions: List[int] = []
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -198,5 +198,5 @@ class Posting:
         return self._frequency
 
     @property
-    def positions(self) -> list[int]:
+    def positions(self) -> List[int]:
         return self._positions

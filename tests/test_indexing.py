@@ -1,11 +1,11 @@
 import unittest
 from collections import Counter
-from typing import Any
+from typing import Any, List, Dict
 
 from inverted_index.indexing import InvertedIndex
 
 
-def generate_index(documents: dict[Any, list[str]]):
+def generate_index(documents: Dict[Any, List[str]]):
     words = [word for words in documents.values() for word in words]
     vocab = list(set(words))
     index = InvertedIndex()
